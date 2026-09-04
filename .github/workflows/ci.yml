@@ -25,12 +25,25 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install ffmpeg
 
+      # Pins the interpreter the matrix asks for; without this, `uv pip
+      # install --system` would silently use the runner's default Python
+      # and every matrix leg would test the same version.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install
         run: uv pip install --system -e ".[api,dev]"
+
+      - name: Show environment
+        run: |
+          python --version
+          ffmpeg -version | head -1
 
       - name: Lint
         run: ruff check .
