@@ -121,7 +121,9 @@ Interactive docs at `/docs`. Upload size is capped at 512 MB, override with `SCR
 | `faster-whisper` | CPU, anywhere | Default. CTranslate2. Same behaviour on your laptop, CI, and a container. |
 | `mlx` | Apple Silicon GPU | Much faster on an M-series Mac. Mac-only, so never selected automatically. |
 
-Models are `tiny`, `base`, `small`, `medium`, `large-v3`, and (mlx) `turbo`. They download on first use and are cached. `base` is a reasonable default; `small` is noticeably better on accented speech for roughly twice the time.
+Models are `tiny`, `base`, `small`, `medium`, `large-v3`, and (mlx) `turbo`. They download on first use and are cached. `base` is a reasonable default; `small` is noticeably better on accented speech for roughly twice the time. On an M-series Mac `--backend mlx -m turbo` is the sweet spot: it runs a far larger model than `base` in about the same wall time, and leaves the CPU free while it does.
+
+Both backends gate on the same Silero VAD, so silence is skipped identically whichever engine runs. This matters more than it sounds: given a recording that opens on a silent waiting room, Whisper will confidently transcribe the silence as text that was never spoken — and it does so with a `no_speech_prob` of 0.000, so its own guards do not catch it. `--no-vad` turns the gate off for both.
 
 Adding a backend means subclassing `Backend`, implementing one method, and adding a line to the registry in [`backends/__init__.py`](src/scribe/backends/__init__.py) — nothing else in the codebase knows which engine is running.
 
@@ -140,6 +142,8 @@ Decoding is delegated to ffmpeg rather than a Python audio library, because ffmp
 - **Jobs are in-memory.** They do not survive a restart and do not span replicas. [`jobs.py`](src/scribe/jobs.py) is the only module that knows this — swap it for Redis if you need durability.
 - **No speaker diarization.** Whisper does not do it. `pyannote.audio` would, as a separate pass.
 - **Long files are slow on CPU.** An hour of audio on `base`/CPU is roughly 10–15 minutes. Use `--backend mlx` on a Mac, or a smaller model.
+- **VAD trims quiet speech at the edges.** A greeting delivered under the room noise can fall outside the detected span and be dropped along with the silence. `--no-vad` keeps it, at the price of whatever the model invents over the quiet parts.
+- **Proper nouns are only as good as the model.** Product and company names come back phonetically ("NASCOM" for NASSCOM) and no model size fixes it; Whisper has no vocabulary hint to bias toward.
 
 ## Development
 

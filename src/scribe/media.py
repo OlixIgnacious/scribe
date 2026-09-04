@@ -82,13 +82,16 @@ def probe(path: Path) -> dict:
 
 
 @contextmanager
-def as_wav(path: Path) -> Iterator[Path]:
+def as_wav(path: Path, *, probed: dict | None = None) -> Iterator[Path]:
     """Yield `path` decoded to a temporary 16 kHz mono WAV, cleaned up on exit.
 
     Works for both audio and video inputs — the video stream is simply dropped.
+    Pass `probed` to reuse an earlier `probe()` result instead of running ffprobe
+    a second time; the probe is only here to fail fast with a clear message.
     """
     ffmpeg = _require("ffmpeg")
-    probe(path)  # fail fast with a clear message before spawning the decode
+    if probed is None:
+        probe(path)  # fail fast with a clear message before spawning the decode
 
     tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     tmp.close()

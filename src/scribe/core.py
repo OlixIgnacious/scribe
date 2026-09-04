@@ -33,8 +33,15 @@ def transcribe(
     path = Path(path)
     engine = get_backend(backend, model=model, **options)
 
-    with media.as_wav(path) as wav:
+    info = media.probe(path)
+    with media.as_wav(path, probed=info) as wav:
         transcript = engine.transcribe(wav, language=language)
+
+    # Backends report duration from their own segment timings, which drift from the
+    # real length — trailing silence is never transcribed, so the last segment ends
+    # early. The container knows, and knows the same answer for every backend.
+    if info["duration"] > 0:
+        transcript.duration = info["duration"]
 
     transcript.metadata.setdefault("source", path.name)
     return transcript
