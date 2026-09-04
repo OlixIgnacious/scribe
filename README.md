@@ -6,6 +6,7 @@
 
 No API keys. No upload. No per-minute billing.
 
+[![CI](https://github.com/OlixIgnacious/scribe/actions/workflows/ci.yml/badge.svg)](https://github.com/OlixIgnacious/scribe/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square)](LICENSE)
