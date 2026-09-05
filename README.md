@@ -125,6 +125,8 @@ Models are `tiny`, `base`, `small`, `medium`, `large-v3`, and (mlx) `turbo`. The
 
 Both backends gate on the same Silero VAD, so silence is skipped identically whichever engine runs. This matters more than it sounds: given a recording that opens on a silent waiting room, Whisper will confidently transcribe the silence as text that was never spoken — and it does so with a `no_speech_prob` of 0.000, so its own guards do not catch it. `--no-vad` turns the gate off for both.
 
+Non-speech audio that is not silence — intro music, hold music, applause — is the harder case, and VAD does not fully solve it: some music windows read as speech. The damage there is not the invented text but what follows it. Whisper decodes each window conditioned on the text of the last, so once it starts repeating it stays locked in that state and skips the audio underneath; on a webinar opening with music it dropped 150 seconds of real speech, host introduction and all. The mlx backend therefore decodes each window independently, trading a little cross-sentence coherence for not silently losing content.
+
 Adding a backend means subclassing `Backend`, implementing one method, and adding a line to the registry in [`backends/__init__.py`](src/scribe/backends/__init__.py) — nothing else in the codebase knows which engine is running.
 
 ## How it works

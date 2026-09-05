@@ -70,6 +70,14 @@ class MLXWhisperBackend(Backend):
             path_or_hf_repo=repo,
             language=language,
             verbose=None,
+            # Not a tuning knob — this prevents losing real speech. Each window is
+            # decoded conditioned on the text of the last, so once the model starts
+            # repeating over music or noise it stays locked in that state and skips
+            # the audio underneath: on a webinar opening with intro music it emitted
+            # "Thank you." per window and silently dropped the next 150 seconds,
+            # host introduction and all. Decoding each window fresh costs a little
+            # cross-sentence coherence and buys back the content.
+            condition_on_previous_text=False,
         )
 
         segments = [
