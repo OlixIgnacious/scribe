@@ -7,15 +7,22 @@ timings are measured, not estimated.
 
 ```bash
 brew install ffmpeg                     # scribe shells out to it for decoding
-cd ~/Documents/workspace/Projects/scribe
-uv venv
-uv pip install -e ".[api,mlx]"          # drop ",mlx" if not on Apple Silicon
+uv tool install "scribe[api,mlx] @ git+https://github.com/OlixIgnacious/scribe.git"
+```
+
+That puts `scribe` in `~/.local/bin`, on your PATH, callable from any directory —
+no virtualenv to activate and nothing to remember. Drop `,mlx` if you are not on
+an Apple Silicon Mac.
+
+```bash
+uv tool upgrade scribe      # pull in later changes
+uv tool uninstall scribe    # remove it
 ```
 
 Check what you got:
 
 ```bash
-.venv/bin/scribe backends
+scribe backends
 ```
 
 ```
@@ -26,20 +33,20 @@ Check what you got:
 If `mlx` says `not installed`, you are on the CPU path — everything still works,
 just slower. `mlx` requires an M-series Mac.
 
-### Putting `scribe` on your PATH
+### If `scribe` is not found
 
-Every example below uses `.venv/bin/scribe`, which always works from the repo root.
-To type just `scribe` from anywhere:
-
-```bash
-source .venv/bin/activate       # this shell only
-```
-
-Or permanently, in `~/.zshrc`:
+`uv tool install` puts the binary in `~/.local/bin`. If your shell cannot find it,
+that directory is not on your PATH — `uv tool update-shell` adds it, or do it by
+hand in `~/.zshrc`:
 
 ```bash
-alias scribe="$HOME/Documents/workspace/Projects/scribe/.venv/bin/scribe"
+export PATH="$HOME/.local/bin:$PATH"
 ```
+
+One wrinkle worth knowing: inside a clone with an active `.venv`, the project's own
+`.venv/bin` sits earlier on PATH, so `scribe` there runs the checkout rather than
+the installed tool. That is usually what you want while developing. `which scribe`
+tells you which one you are getting.
 
 ## The command you actually want
 

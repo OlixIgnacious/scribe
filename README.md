@@ -33,18 +33,24 @@ brew install ffmpeg
 sudo apt install ffmpeg
 ```
 
-Then:
+Then install `scribe` onto your PATH:
+
+```bash
+# Apple Silicon — includes the GPU backend
+uv tool install "scribe[api,mlx] @ git+https://github.com/OlixIgnacious/scribe.git"
+
+# elsewhere
+uv tool install "scribe[api] @ git+https://github.com/OlixIgnacious/scribe.git"
+```
+
+`uv tool upgrade scribe` picks up later changes, `uv tool uninstall scribe` removes it. The binary lands in `~/.local/bin`, so make sure that is on your PATH.
+
+To hack on it instead, clone and install in editable mode:
 
 ```bash
 git clone https://github.com/OlixIgnacious/scribe.git
 cd scribe
-uv venv && uv pip install -e ".[api]"
-```
-
-On Apple Silicon, add the GPU backend:
-
-```bash
-uv pip install -e ".[api,mlx]"
+uv venv && uv pip install -e ".[api,mlx,dev]"   # drop mlx off Apple Silicon
 ```
 
 ## Use
